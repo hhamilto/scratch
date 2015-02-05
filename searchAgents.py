@@ -279,7 +279,7 @@ class CornersProblem(search.SearchProblem):
         """
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
-        self._startState = startingGameState;
+        self.startingGameState = (self.startingPosition, (True,True,True,True)) # All 4 corners have food
         top, right = self.walls.height-2, self.walls.width-2
         self.corners = ((1,1), (1,top), (right, 1), (right, top))
         for corner in self.corners:
@@ -296,14 +296,17 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        return self._startState;
+        return self.startingGameState
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        return true if state
+        return ( state[1][0] == False and
+                 state[1][1] == False and
+                 state[1][2] == False and
+                 state[1][3] == False )
 
     def getSuccessors(self, state):
         """
@@ -320,13 +323,17 @@ class CornersProblem(search.SearchProblem):
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
-
-            "*** YOUR CODE HERE ***"
-
+            x,y = state[0]
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall :
+                nextPos = (nextx,nexty)
+                successors.append(((nextPos,(False if state[1][0] == False or (nextPos == self.corners[0]) else True,
+                                            False if state[1][1] == False or (nextPos == self.corners[1]) else True,
+                                            False if state[1][2] == False or (nextPos == self.corners[2]) else True,
+                                            False if state[1][3] == False or (nextPos == self.corners[3]) else True)),
+                                    action,1))
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
@@ -359,9 +366,27 @@ def cornersHeuristic(state, problem):
     """
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
-
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    def add (a,b):
+        return a+b
+    def min (a,b):
+        return a if a<b else b
+    def idenp (a):
+        print a
+        return a
+    def crowDist(p1,p2):
+        return ( (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2 ) ** 0.5
+    #return 0 if problem.isGoalState(state) else reduce(min,map(lambda pair: util.manhattanDistance(state[0], pair[1]), filter(lambda pair: pair[0],zip(state[1],corners))),999999999)
+    foodCorners = map(lambda pair: pair[1],filter(lambda pair: pair[0],zip(state[1],corners)))
+    #print foodCorners
+    curentPosition = state[0]
+    totalCost = 0;
+    while foodCorners :
+        foodCornersWithCost = map(lambda point: (point,util.manhattanDistance(state[0], point)), foodCorners)
+        foodCornersWithCost.sort(lambda p1,p2: -1 if p1[1] < p2[1] else 1)
+        closestFood = foodCornersWithCost[0]
+        totalCost = closestFood[1]
+        foodCorners = filter(lambda fc: fc != closestFood[0],foodCorners)
+    return totalCost
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -454,7 +479,7 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
+    
     return 0
 
 class ClosestDotSearchAgent(SearchAgent):

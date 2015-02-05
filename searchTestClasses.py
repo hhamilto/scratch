@@ -703,6 +703,7 @@ class CornerHeuristicSanity(testClasses.TestCase):
             h1 = searchAgents.cornersHeuristic(succ[0], problem)
             if h0 - h1 > 1:
                 grades.addMessage('FAIL: inconsistent heuristic')
+                exit(1)
                 return False
         heuristic_cost = searchAgents.cornersHeuristic(start_state, problem)
         true_cost = float(solutionDict['cost'])

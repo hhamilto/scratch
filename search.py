@@ -89,14 +89,14 @@ def depthFirstSearch(problem):
     #print "Start's successors:", problem.getSuccessors(problem.getStartState())
     #print "Start's successors type:", type(problem.getSuccessors(problem.getStartState()))
     "*** YOUR CODE HERE ***"
-    ret = _dfs(problem.getStartState(), problem, [])[1]
+    ret = _dfs(problem.getStartState(), problem, set())[1]
     return ret
 
 
 def _dfs(state, problem, visited):
     if state in visited :
         return (False,)
-    visited.append(state)
+    visited.add(state)
     if problem.isGoalState(state):
         return (True, [])
     successors = problem.getSuccessors(state);
@@ -117,11 +117,11 @@ def some(fun, iterable):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     frontier = [{ 'state': problem.getStartState(),'route':[]}]
-    visited = []
+    visited = set();
     while frontier :
         #print frontier
         toVisit = frontier.pop()
-        visited.append(toVisit['state'])
+        visited.add(toVisit['state'])
         if problem.isGoalState(toVisit['state']):
             return toVisit['route']
         else:
@@ -134,10 +134,10 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     frontier = [{ 'state': problem.getStartState(),'route':[], 'cost':0}]
-    visited = []
+    visited = set()
     while frontier :
         toVisit = frontier.pop(0)
-        visited.append(toVisit['state'])
+        visited.add(toVisit['state'])
         if problem.isGoalState(toVisit['state']):
             return toVisit['route']
         else:
@@ -164,12 +164,11 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    print 'FOOOOBARRRR'
     frontier = [{ 'state': problem.getStartState(),'route':[], 'gCost':0,'fCost':heuristic(problem.getStartState(), problem)}]
-    visited = []
+    visited = set()
     while frontier :
         toVisit = frontier.pop(0)
-        visited.append(toVisit['state'])
+        visited.add(toVisit['state'])
         if problem.isGoalState(toVisit['state']):
             return toVisit['route']
         else:
@@ -186,9 +185,6 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                                 lambda node2: node2['state'] == node1['state'] and 
                                               node2['gCost'] < node1['gCost'], frontier),frontier)
             frontier.sort(lambda a,b: 1 if a['fCost'] > b['fCost'] else -1)
-            print frontier
-            print '######################################'
-
     return None
 
 # Abbreviations
